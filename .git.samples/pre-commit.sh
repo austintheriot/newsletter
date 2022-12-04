@@ -23,6 +23,5 @@ if [[ -n "$FILES" ]]
 then
     # Run the specified script file in the `script` directory for each staged file only
     source scripts/pre-commit.sh
-    git add $files
-    echo "re-staging: $($FILES)"
+    git add $FILES
 fi
