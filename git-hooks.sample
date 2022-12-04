@@ -1,0 +1,5 @@
+# pre-push
+# note: on Windows, it maybe necessary to run `$ git lfs update --force`
+cargo test
+cargo clippy -- -D warnings
+cargo fmt -- --check
