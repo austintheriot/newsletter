@@ -2,6 +2,14 @@
 name = "newsletter-api"
 version = "0.1.0"
 edition = "2021"
+authors = ["Austin Theriot <austinmtheriot@gmail.com>"]
+
+[lib]
+path = "src/lib.rs"
+
+[[bin]]
+path = 'src/main.rs'
+name = 'newsletter-api'
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -9,3 +17,6 @@ edition = "2021"
 actix-web = "4.2.1"
 serde = { version = "1.0.148", features = ["derive"] }
 tokio = { version = "1.22.0", features = ["macros", "rt-multi-thread"] }
+
+[dev-dependencies]
+reqwest = "0.11.13"
