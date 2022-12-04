@@ -1,5 +1,8 @@
+# note: on Windows, it maybe necessary to run `$ git lfs update --force` before doing any Git hooks
+# On Windows, it may also be necessary to point to where your `sh` binary is at the top of the file like so:
+#`#!/bin/sh`
+
 # pre-push
-# note: on Windows, it maybe necessary to run `$ git lfs update --force`
 cargo test
 cargo clippy -- -D warnings
 cargo fmt -- --check
