@@ -1,9 +1,7 @@
 mod common;
 
-use std::net::TcpListener;
-
 use common::spawn_app;
-use newsletter_api::run;
+
 use serde_json::json;
 
 #[tokio::test]
