@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 # This script allows applying transformations as a pre-commit hook and then staging them
 # again after edit them.

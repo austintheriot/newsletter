@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 # Print all commands if DEBUG_SCRIPT is enabled
 if [[ -n "${DEBUG_SCRIPT}" ]]
