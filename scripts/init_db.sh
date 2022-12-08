@@ -1,6 +1,12 @@
 #!/bin/sh
 
-set -x
+# Print all commands if DEBUG_SCRIPT is enabled
+if [[ -n "${DEBUG_SCRIPT}" ]]
+then
+  set -x
+fi 
+
+# End script with a matching exit code if any sub-commands fail
 set -eo pipefail
 
 # Check that script dependencies are installed locally and warn if not
@@ -58,6 +64,8 @@ done
 
 >&2 echo "Postgres is up and running on port ${DB_PORT} - running migrations now!"
 
+# This env variable is used by sqlx to verify that SQL queries are valid
+# see https://github.com/launchbadge/sqlx
 export DATABASE_URL=postgres://${DB_USER}:${DB_PASSWORD}@localhost:${DB_PORT}/${DB_NAME}
 sqlx database create
 sqlx migrate run
