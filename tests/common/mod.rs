@@ -1,13 +1,60 @@
 use std::net::TcpListener;
 
-use newsletter_api::startup::run;
+use newsletter_api::{
+    configuration::{get_configuration_with_randomized_database_name, DatabaseSettings},
+    startup::run,
+};
+use reqwest::Client;
+use sqlx::{migrate, Connection, Executor, PgConnection, PgPool};
 
-pub fn spawn_app() -> String {
+pub struct TestApp {
+    pub address: String,
+    pub client: Client,
+    pub pool: PgPool,
+}
+
+/// Spins up the server with a fresh database to run tests against
+pub async fn spawn_app() -> TestApp {
     let listener = TcpListener::bind("127.0.0.1:0").expect("Failed to bind random port");
     let port = listener.local_addr().unwrap().port();
-    let server = run(listener).expect("Failed to bind address");
+    let configuration =
+        get_configuration_with_randomized_database_name().expect("Failed to read configuration");
 
-    let _handle = tokio::spawn(server);
     let address = format!("http://127.0.0.1:{}", port);
-    address
+    let client = reqwest::Client::new();
+    let pool = configure_database(&configuration.database).await;
+    let server = run(listener, pool.clone()).expect("Failed to bind address");
+
+    // Immediately starts executing. Is dropped when the runtime ends (at the end of tests)
+    let _ = tokio::spawn(server);
+
+    TestApp {
+        address,
+        client,
+        pool,
+    }
+}
+
+/// Spins up a fresh, unique database to run queries against on a per-test basis
+pub async fn configure_database(database_settings: &DatabaseSettings) -> PgPool {
+    let mut connection =
+        PgConnection::connect(&database_settings.connection_string_without_db_name())
+            .await
+            .expect("Failed to connect to Postgres");
+
+    connection
+        .execute(format!(r#"CREATE DATABASE "{}";"#, database_settings.name).as_str())
+        .await
+        .expect("Failed to create database");
+
+    let db_pool = PgPool::connect(&database_settings.connection_string())
+        .await
+        .expect("Failed to connect to Postgres");
+
+    migrate!("./migrations")
+        .run(&db_pool)
+        .await
+        .expect("Failed to run database migrations");
+
+    db_pool
 }

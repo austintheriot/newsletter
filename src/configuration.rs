@@ -1,3 +1,5 @@
+use uuid::Uuid;
+
 #[derive(serde::Deserialize)]
 pub struct Settings {
     pub database: DatabaseSettings,
@@ -10,14 +12,21 @@ pub struct DatabaseSettings {
     pub password: String,
     pub port: u16,
     pub host: String,
-    pub database_name: String,
+    pub name: String,
 }
 
 impl DatabaseSettings {
     pub fn connection_string(&self) -> String {
         format!(
             "postgres://{}:{}@{}:{}/{}",
-            self.username, self.password, self.host, self.port, self.database_name
+            self.username, self.password, self.host, self.port, self.name
+        )
+    }
+
+    pub fn connection_string_without_db_name(&self) -> String {
+        format!(
+            "postgres://{}:{}@{}:{}",
+            self.username, self.password, self.host, self.port
         )
     }
 }
@@ -30,4 +39,11 @@ pub fn get_configuration() -> Result<Settings, config::ConfigError> {
         ))
         .build()?;
     settings.try_deserialize::<Settings>()
+}
+
+pub fn get_configuration_with_randomized_database_name() -> Result<Settings, config::ConfigError> {
+    let mut configuration = get_configuration()?;
+    configuration.database.name = Uuid::new_v4().to_string();
+
+    Ok(configuration)
 }

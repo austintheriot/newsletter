@@ -1,14 +1,21 @@
 use std::net::TcpListener;
 
 use crate::routes::{health_check, subscribe};
-use actix_web::{dev::Server, App, HttpServer};
+use actix_web::{dev::Server, web, App, HttpServer};
+use sqlx::PgPool;
 
-pub fn run(listener: TcpListener) -> Result<Server, std::io::Error> {
+pub fn run(listener: TcpListener, db_pool: PgPool) -> Result<Server, std::io::Error> {
     let socket_addr = listener.local_addr();
 
-    let server = HttpServer::new(|| App::new().service(health_check).service(subscribe))
-        .listen(listener)?
-        .run();
+    let db_pool = web::Data::new(db_pool);
+    let server = HttpServer::new(move || {
+        App::new()
+            .service(health_check)
+            .service(subscribe)
+            .app_data(db_pool.clone())
+    })
+    .listen(listener)?
+    .run();
 
     if let Ok(local_addr) = socket_addr {
         println!("Running server at: http://{local_addr}");

@@ -2,26 +2,19 @@ mod common;
 
 use common::spawn_app;
 
-use newsletter_api::configuration::get_configuration;
 use serde_json::json;
-use sqlx::{Connection, PgConnection};
 
 #[tokio::test]
 async fn subscribe_returns_200_for_valid_form_data_json() {
-    let address = spawn_app();
-    let configuration = get_configuration().expect("Failed to read configuration");
-    let connection_string = configuration.database.connection_string();
-    let mut connection = PgConnection::connect(&connection_string)
-        .await
-        .expect("Failed to connect to Postgres");
-    let client = reqwest::Client::new();
+    let app = spawn_app().await;
     let payload = json!({
         "name": "Austin",
         "email": "test@gmail.com",
     });
 
-    let response = client
-        .post(format!("{address}/subscribe"))
+    let response = app
+        .client
+        .post(format!("{}/subscribe", app.address))
         .header("Content-Type", "application/json")
         .body(payload.to_string())
         .send()
@@ -31,7 +24,7 @@ async fn subscribe_returns_200_for_valid_form_data_json() {
     assert_eq!(response.status().as_u16(), 200);
 
     let saved = sqlx::query!("SELECT email, name FROM subscriptions")
-        .fetch_one(&mut connection)
+        .fetch_one(&app.pool)
         .await
         .expect("Failed to fetch saved subscription.");
 
@@ -41,8 +34,8 @@ async fn subscribe_returns_200_for_valid_form_data_json() {
 
 #[tokio::test]
 async fn subscribe_returns_400_for_invalid_form_data_json() {
-    let address = spawn_app();
-    let client = reqwest::Client::new();
+    let app = spawn_app().await;
+
     let payloads = [
         json!({
             "cat": "Meow",
@@ -61,8 +54,9 @@ async fn subscribe_returns_400_for_invalid_form_data_json() {
     ];
 
     for payload in payloads {
-        let response = client
-            .post(format!("{address}/subscribe"))
+        let response = app
+            .client
+            .post(format!("{}/subscribe", app.address))
             .header("Content-Type", "application/json")
             .body(payload.to_string())
             .send()
