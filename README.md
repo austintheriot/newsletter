@@ -11,4 +11,4 @@ This repo is my implementation of Luca Palmieri's newsletter demo API found in h
 
 ## Other Useful Documents
 
-- [Getting Setup Locally](SETUP.md)
+- [Getting Set Up Locally](SETUP.md)
