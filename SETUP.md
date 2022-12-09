@@ -62,6 +62,12 @@ Give permission to git hooks to run:
 chmod ug+x .git/hooks/*
 ```
 
+Giver permission to dev script to execute:
+
+```sh
+chmod +x scripts/dev.sh
+```
+
 Copy files from .git-hook-samples into local .git folder:
 
 ```sh
