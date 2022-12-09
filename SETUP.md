@@ -176,3 +176,18 @@ cargo install cargo-tarpaulin
 ```sh
 cargo install cargo-audit
 ```
+
+- cargo expand
+
+install:
+
+```sh
+# --allow-downgrade allows rustup to find latest nightly with all available components
+rustup toolchain install nightly --allow-downgrade && cargo install cargo-expand
+```
+
+run:
+
+```sh
+cargo +nightly expand
+```
