@@ -20,6 +20,7 @@ tokio = { version = "1.22.0", features = ["macros", "rt-multi-thread"] }
 config = "0.13.3"
 uuid = { version = "1", features = ["v4"] }
 chrono = { version = "0.4.11", default-features = false, features = ["clock"] }
+# allows us to create a logging and tracing service for our app
 tracing = { version = "0.1.37", features = ["log"] }
 tracing-subscriber = { version = "0.3.16", features = [
     "registry",
@@ -27,6 +28,8 @@ tracing-subscriber = { version = "0.3.16", features = [
 ] }
 tracing-bunyan-formatter = "0.3.4"
 tracing-log = "0.1.3"
+# allows us to access global tracing instance after initialization, if necessary
+once_cell = "1.16.0"
 
 [dependencies.sqlx]
 version = "0.6.2"

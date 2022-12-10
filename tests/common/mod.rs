@@ -2,10 +2,19 @@ use std::net::TcpListener;
 
 use newsletter_api::{
     configuration::{get_configuration_with_randomized_database_name, DatabaseSettings},
-    startup::run,
+    startup::run, telemetry,
 };
+use once_cell::sync::Lazy;
 use reqwest::Client;
 use sqlx::{migrate, Connection, Executor, PgConnection, PgPool};
+
+/// Another optional paradigm besides using std's OnceCell to ensure that 
+/// global configuration happens only once while also allowing TRACING to 
+/// be referred to after it's initialization if necessary
+static TRACING: Lazy<()> = Lazy::new(|| {
+    let subscriber = telemetry::get_subscriber("test", "debug");
+    telemetry::init_subscriber(subscriber);
+});
 
 pub struct TestApp {
     pub address: String,
@@ -15,6 +24,8 @@ pub struct TestApp {
 
 /// Spins up the server with a fresh database to run tests against
 pub async fn spawn_app() -> TestApp {
+    Lazy::force(&TRACING);
+    
     let listener = TcpListener::bind("127.0.0.1:0").expect("Failed to bind random port");
     let port = listener.local_addr().unwrap().port();
     let configuration =
