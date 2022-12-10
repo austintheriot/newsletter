@@ -16,7 +16,6 @@ pub struct SubscribePayload {
     name = "Adding a new subscriber",
     skip(pool, json),
     fields(
-        request_id = %Uuid::new_v4(),
         subscriber_name = %json.name,
         subscriber_email = %json.email
     )
