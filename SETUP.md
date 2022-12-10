@@ -159,25 +159,25 @@ sudo apt-get install libssl-dev
 
 ## Nice-to-haves
 
-- cargo-watch
+- cargo-watch (for re-compiling and re-running on changes)
 
 ```sh
 cargo install cargo-watch
 ```
 
-- cargo-tarpaulin (code coverage for x86_64 Linux only)
+- cargo-tarpaulin (code coverage for x86_64 Linux only) (for checking test coverage)
 
 ```sh
 cargo install cargo-tarpaulin
 ```
 
-- cargo-audit
+- cargo-audit (for detecting security vulnerabilities)
 
 ```sh
 cargo install cargo-audit
 ```
 
-- cargo expand
+- cargo expand (for inspecting the generated code from macros)
 
 install:
 
@@ -190,4 +190,18 @@ run:
 
 ```sh
 cargo +nightly expand
+```
+
+- cargo-udeps (for checking for unused dependencies)
+
+install:
+
+```sh
+cargo install cargo-udeps
+```
+
+run:
+
+```sh
+cargo +nightly udeps
 ```
