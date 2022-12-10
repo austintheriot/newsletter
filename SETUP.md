@@ -165,6 +165,20 @@ sudo apt-get install libssl-dev
 cargo install cargo-watch
 ```
 
+- bunyan (for pretty-printing structured JSON logs)
+
+install:
+
+```sh
+cargo install bunyan
+```
+
+run:
+
+```sh
+TEST_LOG=true cargo test | bunyan
+```
+
 - cargo-tarpaulin (code coverage for x86_64 Linux only) (for checking test coverage)
 
 ```sh

@@ -3,6 +3,7 @@ use std::net::TcpListener;
 use newsletter_api::{
     configuration::{get_configuration_with_randomized_database_name, DatabaseSettings},
     startup::run,
+    telemetry,
 };
 use reqwest::Client;
 use sqlx::{migrate, Connection, Executor, PgConnection, PgPool};
@@ -15,6 +16,15 @@ pub struct TestApp {
 
 /// Spins up the server with a fresh database to run tests against
 pub async fn spawn_app() -> TestApp {
+    // only print logs from tests if TEST_LOG flag is set
+    if std::env::var("TEST_LOG").is_ok() {
+        let subscriber = telemetry::get_subscriber("test", "debug", std::io::stdout);
+        telemetry::init_subscriber(subscriber);
+    } else {
+        let subscriber = telemetry::get_subscriber("test", "debug", std::io::sink);
+        telemetry::init_subscriber(subscriber);
+    }
+
     let listener = TcpListener::bind("127.0.0.1:0").expect("Failed to bind random port");
     let port = listener.local_addr().unwrap().port();
     let configuration =

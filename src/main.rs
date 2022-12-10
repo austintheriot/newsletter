@@ -5,7 +5,7 @@ use sqlx::PgPool;
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
-    let subscriber = telemetry::get_subscriber("newsletter", "info");
+    let subscriber = telemetry::get_subscriber("newsletter", "info", std::io::stdout);
     telemetry::init_subscriber(subscriber);
 
     let configuration = configuration::get_configuration().expect("Failed to read configuration");

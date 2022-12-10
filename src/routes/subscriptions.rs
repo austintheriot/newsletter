@@ -1,7 +1,7 @@
 use actix_web::{post, web, HttpResponse};
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
-use sqlx::PgPool;
+use sqlx::{postgres::PgQueryResult, Error, PgPool};
 use tracing::Instrument;
 use uuid::Uuid;
 
@@ -12,38 +12,44 @@ pub struct SubscribePayload {
 }
 
 #[post("/subscribe")]
-async fn subscribe(json: web::Json<SubscribePayload>, pool: web::Data<PgPool>) -> HttpResponse {
-    let request_id = Uuid::new_v4();
-    let request_span = tracing::info_span!(
-        "Adding a new subscriber",
-        %request_id,
+#[tracing::instrument(
+    name = "Adding a new subscriber",
+    skip(pool, json),
+    fields(
+        request_id = %Uuid::new_v4(),
         subscriber_name = %json.name,
         subscriber_email = %json.email
-    );
-    let _request_span_guard = request_span.enter();
+    )
+)]
+async fn subscribe(pool: web::Data<PgPool>, json: web::Json<SubscribePayload>) -> HttpResponse {
+    match insert_subscriber(pool.get_ref(), &json).await {
+        Ok(_) => HttpResponse::Ok().finish(),
+        Err(_) => HttpResponse::InternalServerError().finish(),
+    }
+}
 
+/// Inserts a subscriber into the database
+pub async fn insert_subscriber(
+    pool: &PgPool,
+    subscribe_payload: &SubscribePayload,
+) -> Result<PgQueryResult, Error> {
     let query_span = tracing::info_span!("Saving new subscriber details in the database",);
-    match sqlx::query!(
+    let query_result = sqlx::query!(
         r#"
         INSERT INTO subscriptions (id, name, email, subscribed_at)
         VALUES ($1, $2, $3, $4)
     "#,
         Uuid::new_v4(),
-        json.name,
-        json.email,
+        subscribe_payload.name,
+        subscribe_payload.email,
         Utc::now()
     )
-    .execute(pool.get_ref())
+    .execute(pool)
     .instrument(query_span)
     .await
-    {
-        Ok(_) => {
-            tracing::info!("request_id {request_id} New subscriber details have been saved");
-            HttpResponse::Ok().finish()
-        }
-        Err(e) => {
-            tracing::error!("request_id {request_id} Failed to execute query: {:?}", e);
-            HttpResponse::InternalServerError().finish()
-        }
-    }
+    .map_err(|e| {
+        tracing::error!("failed to execute query: {:?}", e);
+        e
+    })?;
+    Ok(query_result)
 }
