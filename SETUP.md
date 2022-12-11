@@ -117,7 +117,7 @@ sudo kill <pid>
 error: failed to run custom build command for `openssl-sys v0.9.78`
 
 Caused by:
-  process didn't exit successfully: `/home/austin/Code/newsletter-api/target/debug/build/openssl-sys-fbb4cbe5ef8d9301/build-script-main` (exit status: 101)
+  process didn't exit successfully: `/home/austin/Code/newsletter/target/debug/build/openssl-sys-fbb4cbe5ef8d9301/build-script-main` (exit status: 101)
   --- stdout
   cargo:rustc-cfg=const_fn
   cargo:rustc-cfg=openssl
@@ -226,11 +226,11 @@ cargo +nightly udeps
 Build image
 
 ```sh
-docker build --tag newsletter-api Dockerfile .
+docker build --tag newsletter Dockerfile .
 ```
 
 Run
 
 ```sh
-docker run -p 8000:8000 newsletter-api
+docker run -p 8000:8000 newsletter
 ```

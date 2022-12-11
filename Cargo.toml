@@ -1,5 +1,5 @@
 [package]
-name = "newsletter-api"
+name = "newsletter"
 version = "0.1.0"
 edition = "2021"
 authors = ["Austin Theriot <austinmtheriot@gmail.com>"]
@@ -9,7 +9,7 @@ path = "src/lib.rs"
 
 [[bin]]
 path = 'src/main.rs'
-name = 'newsletter-api'
+name = 'newsletter'
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

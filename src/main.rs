@@ -1,6 +1,6 @@
 use std::net::TcpListener;
 
-use newsletter_api::{configuration, startup::run, telemetry};
+use newsletter::{configuration, startup::run, telemetry};
 use secrecy::ExposeSecret;
 use sqlx::PgPool;
 

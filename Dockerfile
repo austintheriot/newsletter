@@ -19,7 +19,7 @@ COPY . .
 # Only need this environment variable while compiling
 # to tell our sqlx to use the cached version of our sqlx-data.json file
 ENV SQLX_OFFLINE true
-RUN cargo build --release --bin newsletter-api
+RUN cargo build --release --bin newsletter
 
 # Using a very slim OS here, so some things need to be installed manually below
 # Optionally, we could use `FROM debian:buster-slim AS runtime` instead without the dependency headache
@@ -34,7 +34,7 @@ RUN apt-get update -y \
     && apt-get autoremove -y \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/*
-COPY --from=builder /app/target/release/newsletter-api newsletter-api
+COPY --from=builder /app/target/release/newsletter newsletter
 COPY configuration configuration
 ENV APP_ENVIRONMENT production
-ENTRYPOINT ["./newsletter-api"]
+ENTRYPOINT ["./newsletter"]

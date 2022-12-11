@@ -1,6 +1,6 @@
 use std::net::TcpListener;
 
-use newsletter_api::{
+use newsletter::{
     configuration::{get_configuration_with_randomized_database_name, DatabaseSettings},
     startup::run,
     telemetry,
