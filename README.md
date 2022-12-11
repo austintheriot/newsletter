@@ -7,7 +7,7 @@
 
 ## About
 
-This repo is my implementation of Luca Palmieri's newsletter demo API found in his book *Zero to Production in Rust*. My hope with this repo is to create a demo backend application that mirrors a "real-world" app as close as possible: CI/CD, automated testing, documentation, MVP functionality, etc.
+This repo is my implementation of Luca Palmieri's newsletter demo API found in his book *Zero to Production in Rust*. My hope with this repo is to create a demo backend application that mirrors a "real-world" app as close as possible: CI/CD, automated testing, documentation, telemetry, etc.
 
 ## Other Useful Documents
 
