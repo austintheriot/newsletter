@@ -10,11 +10,13 @@ async fn main() -> std::io::Result<()> {
     telemetry::init_subscriber(subscriber);
 
     let configuration = configuration::get_configuration().expect("Failed to read configuration");
-    let address = format!("127.0.0.1:{}", configuration.application_port);
+    let address = format!(
+        "{}:{}",
+        configuration.application.host, configuration.application.port
+    );
     let listener = TcpListener::bind(address)?;
     let postgres_connection_url = configuration.database.connection_string();
-    let db_pool = PgPool::connect(postgres_connection_url.expose_secret())
-        .await
+    let db_pool = PgPool::connect_lazy(postgres_connection_url.expose_secret())
         .expect("Failed to connect to Postgres");
 
     run(listener, db_pool)?.await

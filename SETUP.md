@@ -15,6 +15,7 @@
       - [Docker error: Port in use](#docker-error-port-in-use)
       - [Missing OpenSSL installation](#missing-openssl-installation)
   - [Nice-to-haves](#nice-to-haves)
+  - [Docker Scripts](#docker-scripts)
 
 ## Getting Set Up
 
@@ -218,4 +219,18 @@ run:
 
 ```sh
 cargo +nightly udeps
+```
+
+## Docker Scripts
+
+Build image
+
+```sh
+docker build --tag newsletter-api Dockerfile .
+```
+
+Run
+
+```sh
+docker run -p 8000:8000 newsletter-api
 ```
