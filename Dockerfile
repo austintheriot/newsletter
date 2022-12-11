@@ -17,12 +17,12 @@ RUN cargo chef cook --release --recipe-path recipe.json
 # Build application
 COPY . .
 # Only need this environment variable while compiling
+# to tell our sqlx to use the cached version of our sqlx-data.json file
 ENV SQLX_OFFLINE true
-# Build our project
 RUN cargo build --release --bin newsletter-api
 
-# Using a very slim underlying OS here, so some things need to be installed manually below
-# optionally could use `FROM debian:buster-slim AS runtime` instead without the dependency headache
+# Using a very slim OS here, so some things need to be installed manually below
+# Optionally, we could use `FROM debian:buster-slim AS runtime` instead without the dependency headache
 FROM debian:bullseye-slim AS runtime
 WORKDIR /app
 # Install OpenSLL - it is dynamically linked by some of our dependencies
