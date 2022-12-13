@@ -1,8 +1,6 @@
-FROM rust:1.63.0-slim AS chef
+FROM lukemathwalker/cargo-chef:latest-rust-1 as chef
 WORKDIR /app
-# We only pay the installation cost once for installing cargo-chef, 
-# it will be cached from the second build onwards
-RUN cargo install cargo-chef && apt update && apt install lld clang -y
+RUN apt update && apt install lld clang -y
 
 FROM chef as planner
 COPY . .
@@ -12,17 +10,14 @@ RUN cargo chef prepare  --recipe-path recipe.json
 FROM chef as builder
 COPY --from=planner /app/recipe.json recipe.json
 # Build our project dependencies, not our application!
-# this is the caching Docker layer!
 RUN cargo chef cook --release --recipe-path recipe.json
-# Build application
 COPY . .
 # Only need this environment variable while compiling
 # to tell our sqlx to use the cached version of our sqlx-data.json file
 ENV SQLX_OFFLINE true
+# Build our project
 RUN cargo build --release --bin newsletter
 
-# Using a very slim OS here, so some things need to be installed manually below
-# Optionally, we could use `FROM debian:buster-slim AS runtime` instead without the dependency headache
 FROM debian:bullseye-slim AS runtime
 WORKDIR /app
 # Install OpenSLL - it is dynamically linked by some of our dependencies
