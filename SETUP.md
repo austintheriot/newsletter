@@ -267,3 +267,9 @@ Destroying instance (haven't tested this yet):
 ```sh
 doctl apps delete newsletter
 ```
+
+Setting new spec.yaml file after edits:
+
+```sh
+doctl apps update newsletter --spec=spec.yaml
+```
