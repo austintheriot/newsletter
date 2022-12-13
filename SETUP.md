@@ -13,6 +13,7 @@
     - [Linux](#linux)
       - [Docker error: Permission denied while connecting to daemon socket](#docker-error-permission-denied-while-connecting-to-daemon-socket)
       - [Docker error: Port in use](#docker-error-port-in-use)
+      - [Docker error: connection refused](#docker-error-connection-refused)
       - [Missing OpenSSL installation](#missing-openssl-installation)
   - [Nice-to-haves](#nice-to-haves)
   - [Docker Scripts](#docker-scripts)
@@ -109,6 +110,23 @@ and you can kill whatever process is running on that port with that process' `pi
 
 ```sh
 sudo kill <pid>
+```
+
+#### Docker error: connection refused
+
+```sh
+curl -v 127.0.0.1:8000/health_check
+*   Trying 127.0.0.1:8000...
+* connect to 127.0.0.1 port 8000 failed: Connection refused
+* Failed to connect to 127.0.0.1 port 8000 after 0 ms: Connection refused
+* Closing connection 0
+curl: (7) Failed to connect to 127.0.0.1 port 8000 after 0 ms: Connection refused
+```
+
+If running on Linux, you may need to run Docker as superuser to expose a port locally from within the container. See [post-installation instructions from Docker](https://docs.docker.com/engine/install/linux-postinstall/), or you can temporarily prefix your command with `sudo`:
+
+```sh
+sudo docker run -p 8000:8000 newsletter
 ```
 
 #### Missing OpenSSL installation
