@@ -17,6 +17,7 @@
       - [Missing OpenSSL installation](#missing-openssl-installation)
   - [Nice-to-haves](#nice-to-haves)
   - [Docker Scripts](#docker-scripts)
+  - [DigitalOcean Scripts](#digitalocean-scripts)
 
 ## Getting Set Up
 
@@ -251,4 +252,18 @@ Run
 
 ```sh
 docker run -p 8000:8000 newsletter
+```
+
+## DigitalOcean Scripts
+
+Spinning up instance:
+
+```sh
+doctl apps create --spec spec.yaml
+```
+
+Destroying instance (haven't tested this yet):
+
+```sh
+doctl apps delete newsletter
 ```
