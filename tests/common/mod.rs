@@ -48,7 +48,7 @@ pub async fn spawn_app() -> TestApp {
 
 /// Spins up a fresh, unique database to run queries against on a per-test basis
 pub async fn configure_database(database_settings: &DatabaseSettings) -> PgPool {
-    let mut connection = PgConnection::connect_with(&database_settings.without_db())
+    let mut connection = PgConnection::connect_with(&database_settings.with_postgres_db())
         .await
         .expect("Failed to connect to Postgres");
 

@@ -36,6 +36,11 @@ impl DatabaseSettings {
         pg_connection_options
     }
 
+    /// connects to the "default" postgres database instead
+    pub fn with_postgres_db(&self) -> PgConnectOptions {
+        self.without_db().database("postgres")
+    }
+
     pub fn without_db(&self) -> PgConnectOptions {
         let ssl_mode = if self.require_ssl {
             PgSslMode::Require
