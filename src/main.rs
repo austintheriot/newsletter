@@ -1,7 +1,6 @@
 use std::{net::TcpListener, time::Duration};
 
 use newsletter::{configuration, startup::run, telemetry};
-use secrecy::ExposeSecret;
 use sqlx::postgres::PgPoolOptions;
 
 #[tokio::main]
@@ -15,11 +14,10 @@ async fn main() -> std::io::Result<()> {
         configuration.application.host, configuration.application.port
     );
     let listener = TcpListener::bind(address)?;
-    let postgres_connection_url = configuration.database.connection_string();
+    let pg_connection_options = configuration.database.with_db();
     let db_pool = PgPoolOptions::new()
         .acquire_timeout(Duration::from_secs(2))
-        .connect_lazy(postgres_connection_url.expose_secret())
-        .expect("Failed to connect to Postgres");
+        .connect_lazy_with(pg_connection_options);
 
     run(listener, db_pool)?.await
 }

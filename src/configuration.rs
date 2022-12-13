@@ -1,4 +1,9 @@
 use secrecy::{ExposeSecret, Secret};
+use sqlx::{
+    postgres::{PgConnectOptions, PgSslMode},
+    ConnectOptions,
+};
+use tracing::log::LevelFilter;
 use uuid::Uuid;
 
 #[derive(serde::Deserialize)]
@@ -20,28 +25,30 @@ pub struct DatabaseSettings {
     pub port: u16,
     pub host: String,
     pub name: String,
+    pub require_ssl: bool,
 }
 
 impl DatabaseSettings {
-    pub fn connection_string(&self) -> Secret<String> {
-        Secret::new(format!(
-            "postgres://{}:{}@{}:{}/{}",
-            self.username,
-            self.password.expose_secret(),
-            self.host,
-            self.port,
-            self.name
-        ))
+    pub fn with_db(&self) -> PgConnectOptions {
+        let mut pg_connection_options = self.without_db().application_name(&self.name);
+        // cut down some of the noise by filtering out the Trace logs
+        pg_connection_options.log_statements(LevelFilter::Trace);
+        pg_connection_options
     }
 
-    pub fn connection_string_without_db_name(&self) -> Secret<String> {
-        Secret::new(format!(
-            "postgres://{}:{}@{}:{}",
-            self.username,
-            self.password.expose_secret(),
-            self.host,
-            self.port
-        ))
+    pub fn without_db(&self) -> PgConnectOptions {
+        let ssl_mode = if self.require_ssl {
+            PgSslMode::Require
+        } else {
+            PgSslMode::Prefer
+        };
+
+        PgConnectOptions::new()
+            .host(&self.host)
+            .username(&self.username)
+            .password(self.password.expose_secret())
+            .port(self.port)
+            .ssl_mode(ssl_mode)
     }
 }
 
@@ -81,21 +88,32 @@ pub fn get_configuration() -> Result<Settings, config::ConfigError> {
     let configuration_directory = base_path.join("configuration");
 
     // this will determine which configuration to use at runtime
-    // and can be specified with a flag: APP_ENVIRONMENT
+    // and can be specified manually with a flag: APP_ENVIRONMENT
+    // (normally this is set from Docker when running in production)
     let app_environment: Environment = std::env::var("APP_ENVIRONMENT")
         .unwrap_or_else(|_| String::from("local"))
         .try_into()
         .expect("Failed to parse APP_ENVIRONMENT env variable");
 
     let settings = config::Config::builder()
+        // base configuration for all environments
         .add_source(config::File::from(
             configuration_directory.join("base.yaml"),
         ))
-        // override specific configuration properties depending on current environment
+        // set specific properties depending on current environment (allows us to
+        // expose a port publicly in production but keep it local to our machine in development)
         .add_source(config::File::from(
             configuration_directory.join(format!("{}.yaml", app_environment.as_str())),
         ))
+        // allows overriding any configuration settings at runtime from the command line
+        // e.g. APP_APPLICATION__PORT=1234 sets the value for Settings.application.port
+        .add_source(
+            config::Environment::with_prefix("APP")
+                .prefix_separator("_")
+                .separator("__"),
+        )
         .build()?;
+
     settings.try_deserialize::<Settings>()
 }
 

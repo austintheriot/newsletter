@@ -6,7 +6,7 @@ use newsletter::{
     telemetry,
 };
 use reqwest::Client;
-use secrecy::ExposeSecret;
+
 use sqlx::{migrate, Connection, Executor, PgConnection, PgPool};
 
 pub struct TestApp {
@@ -48,20 +48,16 @@ pub async fn spawn_app() -> TestApp {
 
 /// Spins up a fresh, unique database to run queries against on a per-test basis
 pub async fn configure_database(database_settings: &DatabaseSettings) -> PgPool {
-    let mut connection = PgConnection::connect(
-        database_settings
-            .connection_string_without_db_name()
-            .expose_secret(),
-    )
-    .await
-    .expect("Failed to connect to Postgres");
+    let mut connection = PgConnection::connect_with(&database_settings.without_db())
+        .await
+        .expect("Failed to connect to Postgres");
 
     connection
         .execute(format!(r#"CREATE DATABASE "{}";"#, database_settings.name).as_str())
         .await
         .expect("Failed to create database");
 
-    let db_pool = PgPool::connect(database_settings.connection_string().expose_secret())
+    let db_pool = PgPool::connect_with(database_settings.with_db())
         .await
         .expect("Failed to connect to Postgres");
 
