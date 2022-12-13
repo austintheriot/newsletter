@@ -271,5 +271,9 @@ doctl apps delete newsletter
 Setting new spec.yaml file after edits:
 
 ```sh
-doctl apps update newsletter --spec=spec.yaml
+# get id for app
+doctl apps list
+
+# update spec.yaml file
+doctl apps update <ID> --spec=spec.yaml
 ```
