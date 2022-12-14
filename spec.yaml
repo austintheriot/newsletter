@@ -20,21 +20,22 @@ services:
     envs:
     # enables us to provide these settings at runtime in production
     # and keep these as secrets in DigitalOcean
+    # see https://docs.digitalocean.com/products/app-platform/how-to/use-environment-variables/#resource-specific-variables
       - key: APP_DATABASE__USERNAME
         scope: RUN_TIME
-        value: ${newsletter.USERNAME}
+        value: ${newsletter-db.USERNAME}
       - key: APP_DATABASE__PASSWORD
         scope: RUN_TIME
-        value: ${newsletter.PASSWORD}
+        value: ${newsletter-db.PASSWORD}
       - key: APP_DATABASE__HOST
         scope: RUN_TIME
-        value: ${newsletter.HOSTNAME}
+        value: ${newsletter-db.HOSTNAME}
       - key: APP_DATABASE__PORT
         scope: RUN_TIME
-        value: ${newsletter.PORT}
+        value: ${newsletter-db.PORT}
       - key: APP_DATABASE__DATABASE_NAME
         scope: RUN_TIME
-        value: ${newsletter.DATABASE}
+        value: ${newsletter-db.DATABASE}
 databases:
   - engine: PG
     name: newsletter-db
