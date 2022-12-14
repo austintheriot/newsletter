@@ -34,14 +34,14 @@ impl SubscriberEmail {
         if let Some(forbidden_character) = s
             .chars()
             .into_iter()
-            .find(|ch| forbidden_characters.contains(&ch))
+            .find(|ch| forbidden_characters.contains(ch))
         {
             return Err(SubscriberEmailError::ForbiddenCharacters {
                 forbidden_character,
             });
         }
 
-        Ok(SubscriberEmail(s.to_string()))
+        Ok(SubscriberEmail(s))
     }
 
     pub fn inner(self) -> String {
