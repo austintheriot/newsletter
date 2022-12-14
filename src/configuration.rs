@@ -27,23 +27,11 @@ pub struct DatabaseSettings {
     #[serde(deserialize_with = "deserialize_number_from_string")]
     pub port: u16,
     pub host: String,
-    pub name: String,
+    pub database_name: String,
     pub require_ssl: bool,
 }
 
 impl DatabaseSettings {
-    pub fn with_db(&self) -> PgConnectOptions {
-        let mut pg_connection_options = self.without_db().application_name(&self.name);
-        // cut down some of the noise by filtering out the Trace logs
-        pg_connection_options.log_statements(LevelFilter::Trace);
-        pg_connection_options
-    }
-
-    /// connects to the "default" postgres database instead
-    pub fn with_postgres_db(&self) -> PgConnectOptions {
-        self.without_db().database("postgres")
-    }
-
     pub fn without_db(&self) -> PgConnectOptions {
         let ssl_mode = if self.require_ssl {
             PgSslMode::Require
@@ -57,6 +45,18 @@ impl DatabaseSettings {
             .password(self.password.expose_secret())
             .port(self.port)
             .ssl_mode(ssl_mode)
+    }
+
+    pub fn with_db(&self) -> PgConnectOptions {
+        let mut pg_connection_options = self.without_db().database(&self.database_name);
+        // cut down some of the noise by filtering out the Trace logs
+        pg_connection_options.log_statements(LevelFilter::Trace);
+        pg_connection_options
+    }
+
+    /// connects to the "default" postgres database instead
+    pub fn with_postgres_db(&self) -> PgConnectOptions {
+        self.without_db().database("postgres")
     }
 }
 
@@ -127,7 +127,7 @@ pub fn get_configuration() -> Result<Settings, config::ConfigError> {
 
 pub fn get_configuration_with_randomized_database_name() -> Result<Settings, config::ConfigError> {
     let mut configuration = get_configuration()?;
-    configuration.database.name = Uuid::new_v4().to_string();
+    configuration.database.database_name = Uuid::new_v4().to_string();
 
     Ok(configuration)
 }
