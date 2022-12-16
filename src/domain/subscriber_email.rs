@@ -6,18 +6,18 @@ use thiserror::Error;
 pub struct SubscriberEmail(String);
 
 #[derive(Error, Debug)]
-pub enum SubscriberEmailError {
+pub enum SubscriberEmailParseError {
     #[error("email is invalid")]
     Invalid,
 }
 
 impl SubscriberEmail {
-    pub fn parse(s: impl Into<String>) -> Result<SubscriberEmail, SubscriberEmailError> {
+    pub fn parse(s: impl Into<String>) -> Result<SubscriberEmail, SubscriberEmailParseError> {
         let s: String = s.into();
         if validator::validate_email(&s) {
             Ok(Self(s))
         } else {
-            Err(SubscriberEmailError::Invalid)
+            Err(SubscriberEmailParseError::Invalid)
         }
     }
 
@@ -27,7 +27,7 @@ impl SubscriberEmail {
 }
 
 impl TryFrom<String> for SubscriberEmail {
-    type Error = SubscriberEmailError;
+    type Error = SubscriberEmailParseError;
 
     fn try_from(subscriber_email: String) -> Result<Self, Self::Error> {
         Self::parse(subscriber_email)

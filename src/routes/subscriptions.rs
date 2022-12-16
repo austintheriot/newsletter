@@ -5,7 +5,7 @@ use sqlx::{postgres::PgQueryResult, Error, PgPool};
 use tracing::Instrument;
 use uuid::Uuid;
 
-use crate::{NewSubscriber, SubscriberEmail, SubscriberName};
+use crate::NewSubscriber;
 
 #[derive(Serialize, Deserialize)]
 pub struct SubscribePayload {
@@ -23,15 +23,10 @@ pub struct SubscribePayload {
     )
 )]
 async fn subscribe(pool: web::Data<PgPool>, json: web::Json<SubscribePayload>) -> HttpResponse {
-    let name = match SubscriberName::parse(&json.name) {
-        Ok(name) => name,
+    let new_subscriber = match NewSubscriber::parse(&json.name, &json.email) {
+        Ok(new_subscriber) => new_subscriber,
         Err(_) => return HttpResponse::BadRequest().finish(),
     };
-    let email = match SubscriberEmail::parse(&json.email) {
-        Ok(email) => email,
-        Err(_) => return HttpResponse::BadRequest().finish(),
-    };
-    let new_subscriber = NewSubscriber { name, email };
 
     match insert_subscriber(pool.get_ref(), &new_subscriber).await {
         Ok(_) => HttpResponse::Ok().finish(),
