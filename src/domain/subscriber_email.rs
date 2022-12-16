@@ -1,49 +1,24 @@
-use std::{collections::HashSet, ops::Deref, vec};
+use std::ops::Deref;
 
-use once_cell::sync::Lazy;
 use thiserror::Error;
-use unicode_segmentation::UnicodeSegmentation;
 
 #[derive(Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct SubscriberEmail(String);
 
 #[derive(Error, Debug)]
 pub enum SubscriberEmailError {
-    #[error("email has no characters")]
-    Empty,
-    #[error("email exceeds the maximum length")]
-    TooLong,
-    #[error("email contains forbidden characters")]
-    ForbiddenCharacters { forbidden_character: char },
+    #[error("email is invalid")]
+    Invalid,
 }
-
-pub static FORBIDDEN_CHARACTERS: Lazy<HashSet<char>> = Lazy::new(|| {
-    vec!['\\', '<', '>', '/', '(', ')', '"', '{', '}']
-        .into_iter()
-        .collect()
-});
 
 impl SubscriberEmail {
     pub fn parse(s: impl Into<String>) -> Result<SubscriberEmail, SubscriberEmailError> {
         let s: String = s.into();
-
-        if s.trim().is_empty() {
-            return Err(SubscriberEmailError::Empty);
-        } else if s.graphemes(true).count() > 255 {
-            return Err(SubscriberEmailError::TooLong);
+        if validator::validate_email(&s) {
+            Ok(Self(s))
+        } else {
+            Err(SubscriberEmailError::Invalid)
         }
-
-        if let Some(forbidden_character) = s
-            .chars()
-            .into_iter()
-            .find(|ch| FORBIDDEN_CHARACTERS.contains(ch))
-        {
-            return Err(SubscriberEmailError::ForbiddenCharacters {
-                forbidden_character,
-            });
-        }
-
-        Ok(SubscriberEmail(s))
     }
 
     pub fn inner(self) -> String {
@@ -76,5 +51,51 @@ impl Deref for SubscriberEmail {
 
     fn deref(&self) -> &Self::Target {
         &self.0
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use claim::{assert_err, assert_ok};
+    use fake::{faker::internet::en::SafeEmail, Fake};
+    use quickcheck::{Arbitrary, Gen};
+
+    #[derive(Debug, Clone)]
+    struct ValidEmailFixture(pub String);
+
+    impl Arbitrary for ValidEmailFixture {
+        fn arbitrary<G: Gen>(g: &mut G) -> Self {
+            let email = SafeEmail().fake_with_rng(g);
+            Self(email)
+        }
+    }
+
+    #[test]
+    fn invalid_emails_are_rejected() {
+        let emails = [
+            "",
+            "@.com",
+            "@",
+            ".com",
+            "@gmail.com",
+            "austin",
+            "austin.com",
+            "austingmail.com",
+            "austin@@gmail.com",
+        ];
+        for email in emails {
+            let parsed_email = SubscriberEmail::parse(email);
+            assert_err!(
+                parsed_email,
+                "Invalid email was not rejected by SubscriberEmail::parse: {email}"
+            );
+        }
+    }
+
+    // performs automated property-based testing
+    #[quickcheck]
+    fn valid_emails_are_parsed_successfully(email: ValidEmailFixture) {
+        assert_ok!(SubscriberEmail::parse(email.0));
     }
 }
