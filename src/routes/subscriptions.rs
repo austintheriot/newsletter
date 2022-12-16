@@ -5,6 +5,8 @@ use sqlx::{postgres::PgQueryResult, Error, PgPool};
 use tracing::Instrument;
 use uuid::Uuid;
 
+use crate::{NewSubscriber, SubscriberEmail, SubscriberName};
+
 #[derive(Serialize, Deserialize)]
 pub struct SubscribePayload {
     name: String,
@@ -21,16 +23,27 @@ pub struct SubscribePayload {
     )
 )]
 async fn subscribe(pool: web::Data<PgPool>, json: web::Json<SubscribePayload>) -> HttpResponse {
-    match insert_subscriber(pool.get_ref(), &json).await {
+    let name = match SubscriberName::parse(&json.name) {
+        Ok(name) => name,
+        Err(_) => return HttpResponse::BadRequest().finish(),
+    };
+    let email = match SubscriberEmail::parse(&json.email) {
+        Ok(email) => email,
+        Err(_) => return HttpResponse::BadRequest().finish(),
+    };
+    let new_subscriber = NewSubscriber { name, email };
+
+    match insert_subscriber(pool.get_ref(), &new_subscriber).await {
         Ok(_) => HttpResponse::Ok().finish(),
         Err(_) => HttpResponse::InternalServerError().finish(),
     }
 }
 
 /// Inserts a subscriber into the database
+#[tracing::instrument(skip(pool))]
 pub async fn insert_subscriber(
     pool: &PgPool,
-    subscribe_payload: &SubscribePayload,
+    new_subscriber: &NewSubscriber,
 ) -> Result<PgQueryResult, Error> {
     let query_span = tracing::info_span!("Saving new subscriber details in the database",);
     let query_result = sqlx::query!(
@@ -39,8 +52,8 @@ pub async fn insert_subscriber(
         VALUES ($1, $2, $3, $4)
     "#,
         Uuid::new_v4(),
-        subscribe_payload.name,
-        subscribe_payload.email,
+        new_subscriber.name.as_ref(),
+        new_subscriber.email.as_ref(),
         Utc::now()
     )
     .execute(pool)
