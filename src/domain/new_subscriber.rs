@@ -1,6 +1,6 @@
 use thiserror::Error;
 
-use crate::{SubscriberEmailParseError, SubscriberNameError};
+use crate::{routes::SubscribePayload, SubscriberEmailParseError, SubscriberNameError};
 
 use super::{SubscriberEmail, SubscriberNameParseError};
 
@@ -16,6 +16,14 @@ pub enum NewSubscriberParseError {
 pub struct NewSubscriber {
     pub name: SubscriberNameParseError,
     pub email: SubscriberEmail,
+}
+
+impl TryFrom<SubscribePayload> for NewSubscriber {
+    type Error = NewSubscriberParseError;
+
+    fn try_from(subscribe_payload: SubscribePayload) -> Result<Self, Self::Error> {
+        NewSubscriber::parse(subscribe_payload.name, subscribe_payload.email)
+    }
 }
 
 impl NewSubscriber {

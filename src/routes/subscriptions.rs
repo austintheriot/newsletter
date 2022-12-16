@@ -9,21 +9,24 @@ use crate::NewSubscriber;
 
 #[derive(Serialize, Deserialize)]
 pub struct SubscribePayload {
-    name: String,
-    email: String,
+    pub name: String,
+    pub email: String,
 }
 
 #[post("/subscribe")]
 #[tracing::instrument(
     name = "Adding a new subscriber",
-    skip(pool, json),
+    skip(pool, subscribe_payload),
     fields(
-        subscriber_name = %json.name,
-        subscriber_email = %json.email
+        subscriber_name = %subscribe_payload.name,
+        subscriber_email = %subscribe_payload.email
     )
 )]
-async fn subscribe(pool: web::Data<PgPool>, json: web::Json<SubscribePayload>) -> HttpResponse {
-    let new_subscriber = match NewSubscriber::parse(&json.name, &json.email) {
+async fn subscribe(
+    pool: web::Data<PgPool>,
+    subscribe_payload: web::Json<SubscribePayload>,
+) -> HttpResponse {
+    let new_subscriber: NewSubscriber = match subscribe_payload.into_inner().try_into() {
         Ok(new_subscriber) => new_subscriber,
         Err(_) => return HttpResponse::BadRequest().finish(),
     };
