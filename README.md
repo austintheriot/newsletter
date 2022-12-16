@@ -2,7 +2,7 @@
 
 [![CI Image]][newsletter general CI]
 
-[CI Image]: https://img.shields.io/github/workflow/status/austintheriot/newsletter/Rust?label=build&style=flat-square
+[CI Image]: https://img.shields.io/github/actions/workflow/status/austintheriot/newsletter/general.yml?branch=master&style=flat-square
 [newsletter general CI]: https://github.com/austintheriot/newsletter/actions/workflows/general.yml
 
 ## About
