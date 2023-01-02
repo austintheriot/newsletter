@@ -265,7 +265,9 @@ doctl apps create --spec spec.yaml
 Destroying instance (haven't tested this yet):
 
 ```sh
-doctl apps delete newsletter
+doctl apps list
+
+doctl apps delete <ID>
 ```
 
 Setting new spec.yaml file after edits:
